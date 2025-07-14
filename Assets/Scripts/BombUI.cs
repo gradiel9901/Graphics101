@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class BombUI : MonoBehaviour
 {
@@ -20,15 +21,30 @@ public class BombUI : MonoBehaviour
 
     public float feedbackFadeTime = 1.5f;
 
-    private int correctAnswer;
     private float timeLeft = 60f;
     private bool timerActive = false;
     private Transform currentBomb;
+
+    private int correctAnswer;
+    private string correctTextAnswer;
+    private bool isMathQuestion;
 
     private int difficultyLevel = 1;
     private int correctStreak = 0;
 
     private PlayerController playerMovement;
+
+    private List<(string question, string answer)> historyQuestions = new List<(string, string)>
+    {
+        ("Who was the first President of the Philippines?", "Emilio Aguinaldo"),
+        ("When did the Philippines gain independence from Spain?", "1898"),
+        ("What was the name of the Filipino revolutionary group led by Andres Bonifacio?", "Kataas-taasang, Kagalang-galangang Katipunan"),
+        ("Where was Jose Rizal executed?", "Luneta"),
+        ("What year was the EDSA People Power Revolution?", "1986"),
+        ("Who was the Filipino hero known for the phrase 'What is death to me now'?", "Jose Rizal"),
+        ("What is the longest-running revolt in Philippine history?", "Dagohoy Rebellion"),
+        ("Who was the first female president of the Philippines?", "Corazon Aquino")
+    };
 
     void Start()
     {
@@ -47,7 +63,7 @@ public class BombUI : MonoBehaviour
     public void ActivateBomb(Transform bomb)
     {
         currentBomb = bomb;
-        GenerateEquation();
+        GenerateQuestion();
 
         inputField.text = "";
         timeLeft = 60f;
@@ -63,15 +79,16 @@ public class BombUI : MonoBehaviour
         inputField.Select();
         inputField.ActivateInputField();
 
+        Time.timeScale = 0f;
         if (playerMovement != null)
-            playerMovement.SetMovementEnabled(false); // Use the new movement toggle method
+            playerMovement.SetMovementEnabled(false);
     }
 
     void Update()
     {
         if (!timerActive) return;
 
-        timeLeft -= Time.deltaTime;
+        timeLeft -= Time.unscaledDeltaTime;
         timerText.text = "Time: " + Mathf.CeilToInt(timeLeft).ToString();
 
         if (timeLeft <= 0)
@@ -79,7 +96,6 @@ public class BombUI : MonoBehaviour
             Explode();
         }
 
-        // 🧠 ENTER key to submit
         if (panel.activeSelf && Input.GetKeyDown(KeyCode.Return))
         {
             CheckAnswer();
@@ -88,22 +104,27 @@ public class BombUI : MonoBehaviour
 
     public void CheckAnswer()
     {
-        if (int.TryParse(inputField.text, out int result))
+        string userInput = inputField.text.Trim();
+
+        if (isMathQuestion)
         {
-            if (result == correctAnswer)
-            {
+            if (int.TryParse(userInput, out int result) && result == correctAnswer)
                 Defuse();
-            }
             else
-            {
                 Explode();
-            }
+        }
+        else
+        {
+            if (userInput.ToLower() == correctTextAnswer.ToLower())
+                Defuse();
+            else
+                Explode();
         }
     }
 
     IEnumerator DelayedCloseUI()
     {
-        yield return new WaitForSeconds(feedbackFadeTime);
+        yield return new WaitForSecondsRealtime(feedbackFadeTime);
         CloseUI();
     }
 
@@ -127,7 +148,7 @@ public class BombUI : MonoBehaviour
         Destroy(currentBomb.gameObject);
         timerActive = false;
 
-        equationText.text = "Game Over!";
+        equationText.text = "You Died!";
         timerTextGO.SetActive(false);
         inputFieldGO.SetActive(false);
         submitButtonGO.SetActive(false);
@@ -138,6 +159,8 @@ public class BombUI : MonoBehaviour
 
     public void RestartGame()
     {
+        Time.timeScale = 1f;
+
         if (playerMovement != null)
             playerMovement.SetMovementEnabled(true);
 
@@ -154,6 +177,8 @@ public class BombUI : MonoBehaviour
         inputFieldGO.SetActive(true);
         timerTextGO.SetActive(true);
         equationText.text = "";
+
+        Time.timeScale = 1f;
 
         if (playerMovement != null)
             playerMovement.SetMovementEnabled(true);
@@ -173,7 +198,7 @@ public class BombUI : MonoBehaviour
 
         while (t < feedbackFadeTime)
         {
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             float alpha = Mathf.Lerp(1f, 0f, t / feedbackFadeTime);
             SetTextAlpha(feedbackText, alpha);
             yield return null;
@@ -190,7 +215,21 @@ public class BombUI : MonoBehaviour
         text.color = c;
     }
 
-    void GenerateEquation()
+    void GenerateQuestion()
+    {
+        if (Random.value <= 0.7f)
+        {
+            isMathQuestion = true;
+            GenerateMath();
+        }
+        else
+        {
+            isMathQuestion = false;
+            GenerateHistory();
+        }
+    }
+
+    void GenerateMath()
     {
         int a, b, c;
 
@@ -202,28 +241,24 @@ public class BombUI : MonoBehaviour
                 equationText.text = $"{a} + {b} = ";
                 correctAnswer = a + b;
                 break;
-
             case 2:
                 a = Random.Range(10, 20);
                 b = Random.Range(1, 10);
                 equationText.text = $"{a} - {b} = ";
                 correctAnswer = a - b;
                 break;
-
             case 3:
                 a = Random.Range(2, 10);
                 b = Random.Range(2, 10);
                 equationText.text = $"{a} × {b} = ";
                 correctAnswer = a * b;
                 break;
-
             case 4:
                 b = Random.Range(2, 10);
                 correctAnswer = Random.Range(2, 10);
                 a = correctAnswer * b;
                 equationText.text = $"{a} ÷ {b} = ";
                 break;
-
             case 5:
                 a = Random.Range(1, 10);
                 b = Random.Range(1, 10);
@@ -231,7 +266,6 @@ public class BombUI : MonoBehaviour
                 equationText.text = $"{a} + {b} × {c} = ";
                 correctAnswer = a + b * c;
                 break;
-
             case 6:
                 a = Random.Range(1, 5);
                 b = Random.Range(1, 5);
@@ -239,7 +273,6 @@ public class BombUI : MonoBehaviour
                 equationText.text = $"({a} + {b}) × {c} = ";
                 correctAnswer = (a + b) * c;
                 break;
-
             default:
                 a = Random.Range(2, 5 + difficultyLevel);
                 b = Random.Range(1, 10);
@@ -247,7 +280,12 @@ public class BombUI : MonoBehaviour
                 correctAnswer = a * a + b;
                 break;
         }
+    }
 
-        Debug.Log($"Generated equation: {equationText.text} Answer: {correctAnswer}");
+    void GenerateHistory()
+    {
+        int index = Random.Range(0, historyQuestions.Count);
+        equationText.text = historyQuestions[index].question;
+        correctTextAnswer = historyQuestions[index].answer;
     }
 }
