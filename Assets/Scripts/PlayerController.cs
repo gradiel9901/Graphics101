@@ -6,7 +6,11 @@ using TMPro;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
-    public Transform cameraTransform;
+    public float mouseSensitivity = 2f;
+
+    public Transform cameraPivot;      // Vertical rotation (up/down)
+    public Transform cameraTransform;  // Main camera (used for movement direction)
+
     public Light playerLight;
     public float blinkSpeed = 5f;
     public float detectionRange = 10f;
@@ -14,12 +18,13 @@ public class PlayerController : MonoBehaviour
     public AudioClip dangerClip;
 
     [Header("Death UI")]
-    public GameObject deathPanel; // Assign this in Inspector
+    public GameObject deathPanel;
 
     private CharacterController controller;
     private bool canMove = true;
     private AudioSource audioSource;
     private bool isEnemyNear = false;
+    private float pitch = 0f;
 
     void Start()
     {
@@ -32,18 +37,23 @@ public class PlayerController : MonoBehaviour
 
         if (deathPanel != null)
             deathPanel.SetActive(false);
+
+        LockCursor();
     }
 
     void Update()
     {
-        MovePlayer();
+        if (canMove)
+        {
+            MovePlayer();
+            RotateCamera();
+        }
+
         CheckEnemyProximity();
     }
 
     void MovePlayer()
     {
-        if (!canMove) return;
-
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
@@ -51,6 +61,7 @@ public class PlayerController : MonoBehaviour
 
         if (inputDir.magnitude >= 0.1f)
         {
+            // Camera-relative movement
             Vector3 camForward = cameraTransform.forward;
             Vector3 camRight = cameraTransform.right;
 
@@ -62,9 +73,22 @@ public class PlayerController : MonoBehaviour
             Vector3 moveDir = camForward * v + camRight * h;
             controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
 
-            Quaternion toRotation = Quaternion.LookRotation(moveDir, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, 10f * Time.deltaTime);
+            // Rotate player toward movement direction
+            Quaternion targetRot = Quaternion.LookRotation(moveDir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 10f * Time.deltaTime);
         }
+    }
+
+    void RotateCamera()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+
+        pitch -= mouseY;
+        pitch = Mathf.Clamp(pitch, -45f, 75f);
+
+        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        transform.Rotate(Vector3.up * mouseX);
     }
 
     void CheckEnemyProximity()
@@ -140,10 +164,28 @@ public class PlayerController : MonoBehaviour
             deathPanel.SetActive(true);
 
         SetMovementEnabled(false);
+        UnlockCursor();
     }
 
     public void SetMovementEnabled(bool isEnabled)
     {
         canMove = isEnabled;
+
+        if (isEnabled)
+            LockCursor();
+        else
+            UnlockCursor();
+    }
+
+    void LockCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    void UnlockCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }
