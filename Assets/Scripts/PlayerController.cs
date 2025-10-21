@@ -8,8 +8,8 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float mouseSensitivity = 2f;
 
-    public Transform cameraPivot;      // Vertical rotation (up/down)
-    public Transform cameraTransform;  // Main camera (used for movement direction)
+    public Transform cameraPivot;
+    public Transform cameraTransform;
 
     public Light playerLight;
     public float blinkSpeed = 5f;
@@ -61,7 +61,7 @@ public class PlayerController : MonoBehaviour
 
         if (inputDir.magnitude >= 0.1f)
         {
-            // Camera-relative movement
+
             Vector3 camForward = cameraTransform.forward;
             Vector3 camRight = cameraTransform.right;
 
@@ -73,7 +73,6 @@ public class PlayerController : MonoBehaviour
             Vector3 moveDir = camForward * v + camRight * h;
             controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
 
-            // Rotate player toward movement direction
             Quaternion targetRot = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 10f * Time.deltaTime);
         }

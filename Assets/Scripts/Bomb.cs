@@ -6,12 +6,12 @@ public class Bomb : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Something entered: " + other.name); // Debug log
+        Debug.Log("Something entered: " + other.name);
 
         if (other.CompareTag("Player") && !isActive)
         {
             isActive = true;
-            Debug.Log("Player entered bomb range"); // Confirm trigger match
+            Debug.Log("Player entered bomb range");
             FindFirstObjectByType<BombUI>().ActivateBomb(this.transform);
         }
     }

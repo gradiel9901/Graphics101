@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 public class MazeGenerator : MonoBehaviour
 {
-    public int width = 21;  // must be odd
-    public int height = 21; // must be odd
+    public int width = 21;
+    public int height = 21;
     public float cellSize = 1f;
 
     public GameObject wallPrefab;
@@ -24,12 +24,10 @@ public class MazeGenerator : MonoBehaviour
     {
         maze = new int[width, height];
 
-        // Fill maze with walls
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 maze[x, y] = 0;
 
-        // Start DFS from (1, 1)
         RecursiveBacktrack(1, 1);
     }
 
@@ -37,7 +35,7 @@ public class MazeGenerator : MonoBehaviour
     {
         maze[x, y] = 1;
 
-        int[] dirs = { 0, 1, 2, 3 }; // N, E, S, W
+        int[] dirs = { 0, 1, 2, 3 };
         Shuffle(dirs);
 
         foreach (int dir in dirs)
@@ -46,10 +44,10 @@ public class MazeGenerator : MonoBehaviour
 
             switch (dir)
             {
-                case 0: dy = -2; break; // North
-                case 1: dx = 2; break;  // East
-                case 2: dy = 2; break;  // South
-                case 3: dx = -2; break; // West
+                case 0: dy = -2; break;
+                case 1: dx = 2; break;
+                case 2: dy = 2; break;
+                case 3: dx = -2; break;
             }
 
             int nx = x + dx;
@@ -57,7 +55,7 @@ public class MazeGenerator : MonoBehaviour
 
             if (nx > 0 && ny > 0 && nx < width - 1 && ny < height - 1 && maze[nx, ny] == 0)
             {
-                maze[x + dx / 2, y + dy / 2] = 1; // break wall between
+                maze[x + dx / 2, y + dy / 2] = 1;
                 RecursiveBacktrack(nx, ny);
             }
         }

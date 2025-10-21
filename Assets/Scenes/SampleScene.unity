@@ -8532,15 +8532,20 @@ MonoBehaviour:
   wallPrefab: {fileID: 5504946169759077363, guid: 1d214a722264cf44c94b8bbaea5826c7, type: 3}
   bombPrefab: {fileID: 4556698629043826843, guid: cd41d938fe0a10a459a22276231dc8cc, type: 3}
   enemyPrefab: {fileID: 6597052183415800552, guid: e989a73fc033626468e36aaaaa4e4103, type: 3}
-  navMeshSurface: {fileID: 329025024}
+  navMeshSurface: {fileID: 0}
   gridWidth: 21
   gridHeight: 21
-  numberOfBombs: 100
-  wallHeight: 10
-  wallThickness: 3
-  numberOfEnemies: 3
+  numberOfBombs: 0
+  wallHeight: 30
+  numberOfWalls: 200
+  playerSpawnHeightOffset: 1.5
+  numberOfEnemies: 0
   enemySpeed: 10
   enemyRotation: {x: -90, y: 0, z: 0}
+  finishPortalPrefab: {fileID: 1568118074669711251, guid: 0384d37db85e2c24fb02998705fe6ca9, type: 3}
+  winUI: {fileID: 2008183798}
+  portalSpawnHeight: 1
+  numberOfFinishPortals: 100
 --- !u!4 &2144178281
 Transform:
   m_ObjectHideFlags: 0
@@ -8619,6 +8624,10 @@ PrefabInstance:
     - target: {fileID: 8518461518963174879, guid: 628dc9f192f569f4f9d876a116e5a15f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8518461518963174879, guid: 628dc9f192f569f4f9d876a116e5a15f, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
